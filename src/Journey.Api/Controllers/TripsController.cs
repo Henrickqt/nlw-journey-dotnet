@@ -1,4 +1,7 @@
-﻿using Journey.Application.UseCases.Trips.Delete;
+﻿using Journey.Application.UseCases.Activities.Complete;
+using Journey.Application.UseCases.Activities.Delete;
+using Journey.Application.UseCases.Activities.Register;
+using Journey.Application.UseCases.Trips.Delete;
 using Journey.Application.UseCases.Trips.GetAll;
 using Journey.Application.UseCases.Trips.GetById;
 using Journey.Application.UseCases.Trips.Register;
@@ -8,8 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Journey.Api.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class TripsController : ControllerBase
     {
         [HttpPost]
@@ -51,6 +54,40 @@ namespace Journey.Api.Controllers
         {
             var useCase = new DeleteTripByIdUseCase();
             useCase.Execute(id);
+
+            return NoContent();
+        }
+
+        [HttpPost("{tripId}/activity")]
+        [ProducesResponseType(typeof(ResponseActivityJson), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
+        public IActionResult RegisterActivity([FromRoute] Guid tripId, [FromBody] RequestRegisterActivityJson request)
+        {
+            var useCase = new RegisterActivityForTripUseCase();
+            var response = useCase.Execute(tripId, request);
+
+            return Created(string.Empty, response);
+        }
+
+        [HttpPut("{tripId}/activity/{activityId}/complete")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
+        public IActionResult CompleteActivity([FromRoute] Guid tripId, [FromRoute] Guid activityId)
+        {
+            var useCase = new CompleteActivityForTripUseCase();
+            useCase.Execute(tripId, activityId);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{tripId}/activity/{activityId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
+        public IActionResult DeleteActivity([FromRoute] Guid tripId, [FromRoute] Guid activityId)
+        {
+            var useCase = new DeleteActivityForTripUseCase();
+            useCase.Execute(tripId, activityId);
 
             return NoContent();
         }
